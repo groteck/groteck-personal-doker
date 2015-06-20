@@ -1,0 +1,8 @@
+groteck:
+  build: .
+  volumes:
+    - ../../:/home/groteck/projects
+  ports:
+    - "3000:3000"
+    - "4567:4567"
+    - "2222:22"

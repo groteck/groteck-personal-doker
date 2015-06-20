@@ -1,0 +1,7 @@
+# Get user from Dockerfile image
+sshUser=$(grep "ENV USERNAME" Dockerfile | awk '{ print $3 }')
+sshPassword=$(grep "ENV USERPASSWORD" Dockerfile | awk '{ print $3 }')
+sshpass -p $sshPassword \
+ssh -A -p 2222 \
+-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+$sshUser@localhost
