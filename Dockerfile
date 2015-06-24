@@ -19,7 +19,8 @@ RUN apt-get update
 # Install system packages
 RUN apt-get install -y curl zsh git sudo openssh-server vim-nox tmux  \
                        mongodb-org-server postgresql-common postgresql-9.3 \
-                       libpq-dev make
+                       libpq-dev make mercurial binutils bison gcc \
+                       build-essential
 
 ######################
 ## Create sudo user ##
@@ -121,6 +122,16 @@ RUN curl https://raw.githubusercontent.com/creationix/nvm/v0.24.1/install.sh | b
 ## Install node
 RUN /bin/bash -l -c "source ~/.nvm/nvm.sh && nvm install 0.10"
 RUN echo "source ~/.nvm/nvm.sh; nvm use 0.10" >> ~/.zshrc
+
+########
+## Go ##
+########
+
+## Install GVM
+RUN /bin/bash -l -c "zsh < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)"
+## Install Go
+RUN zsh -c "source ~/.gvm/scripts/gvm; gvm install go1.4.2"
+RUN zsh -c "source ~/.gvm/scripts/gvm; gvm use go1.4.2 --default"
 
 #############
 ## MongoDB ##
