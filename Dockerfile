@@ -19,7 +19,7 @@ RUN apt-get update
 # Install system packages
 RUN apt-get install -y curl zsh git sudo openssh-server vim-nox tmux  \
                        mongodb-org-server postgresql-common postgresql-9.3 \
-                       libpq-dev
+                       libpq-dev make
 
 ######################
 ## Create sudo user ##
@@ -27,7 +27,7 @@ RUN apt-get install -y curl zsh git sudo openssh-server vim-nox tmux  \
 
 # SSH user
 ENV USERNAME groteck
-ENV USERPASSWORD groteck
+ENV USERPASSWORD  groteck
 # Create and configure user
 RUN useradd -ms /bin/bash $USERNAME
 # User with empty password
@@ -41,16 +41,9 @@ RUN mkdir -p /etc/sudoers.d && \
 ## SSH ##
 ##########
 
-# config dssh
+# config sshd
 RUN mkdir /var/run/sshd
 EXPOSE 22
-
-##################
-## Machine name ##
-##################
-
-# Change machine name
-RUN echo '$USERNAME-docker' > /etc/hostname
 
 ##############################
 ## Sudo user configurations ##
@@ -78,19 +71,25 @@ RUN mkdir ~/.ssh
 RUN ssh-keyscan github.com >> ~/.ssh/known_hosts
 
 ## Install my personal vim config
-RUN mkdir .vim .vim/bundle .vim/backup .vim/swap .vim/cache .vim/undo
-RUN curl -o ~/.vimrc https://gist.githubusercontent.com/groteck/9535996/raw/055d1e58270e67c60a1df7aaff8a4dee16d859d9/vimrc
-### Install vim plugins
-RUN curl -o ~/.vim/bundles.vim https://gist.githubusercontent.com/groteck/9535996/raw/66abc3ea76b26e1dde000a38e4152911781d9936/bundles.vim
-RUN git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-RUN vim -u ~/.vim/bundles.vim +PluginInstall +qall
+### Important parameters
+ENV VIMRC_FILE https://raw.githubusercontent.com/groteck/vim/vim-plug/vimrc
+ENV VIM_PLUGINS_FILE https://raw.githubusercontent.com/groteck/vim/vim-plug/bundles.vim
 
-# Install tmux
+### Create vim folders
+RUN mkdir .vim .vim/bundle .vim/backup .vim/swap .vim/cache .vim/undo
+### add vimrc
+RUN curl -o ~/.vimrc $VIMRC_FILE
+### Install plugins
+RUN curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+RUN curl -o ~/.vim/bundles.vim  $VIM_PLUGINS_FILE
+RUN vim -N -u ~/.vim/bundles.vim +PlugInstall +qall
+
+# Tmux configuration
 RUN curl -o ~/.tmux.conf https://gist.githubusercontent.com/groteck/3341700/raw/559cd4746dc9de6a5d7c2d1efe59b01a9d78b5d4/.tmux.conf
 RUN curl -o ~/.tmux.powerline https://gist.githubusercontent.com/groteck/3341700/raw/b8a07517ef7a15f68277af8ee65bea8d76e47a8d/.tmux.powerline
 RUN mkdir -p ~/.solarized/tmux-colors-solarized
 Run curl ~/.solarized/tmux-colors-solarized/tmuxcolors-256.conf https://gist.githubusercontent.com/groteck/3341700/raw/eb7ede440843455f06c2df0ec317a01f52350886/tmuxcolors-256.conf
-RUN echo 'alias tmux="TERM=screen-256color-bce tmux"' >> ~/.zshrc
 
 #############
 ## Locales ##

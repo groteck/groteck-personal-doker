@@ -6,3 +6,4 @@ groteck:
     - "3000:3000"
     - "4567:4567"
     - "2222:22"
+  hostname: groteck-docker
