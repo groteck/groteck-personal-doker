@@ -1,14 +1,15 @@
 FROM ubuntu:14.04
+MAINTAINER Juan Fraire <groteck@gmail.com>
 
 #############################
 ## Install ubuntu packages ##
 #############################
 
-## Update apt-sources.list ##
-## Mongo source
+# Update apt-sources.list ##
+# Mongo source
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
 RUN echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' > /etc/apt/sources.list.d/mongodb.list
-## PG source
+# PG source
 RUN apt-get install -y wget
 RUN sudo sh -c "echo 'deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main' > /etc/apt/sources.list.d/pgdg.list"
 RUN wget --quiet -O - http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | sudo apt-key add -
@@ -17,10 +18,25 @@ RUN wget --quiet -O - http://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | sud
 RUN apt-get update
 
 # Install system packages
-RUN apt-get install -y curl zsh git sudo openssh-server vim-nox tmux  \
-                       mongodb-org-server postgresql-common postgresql-9.3 \
-                       libpq-dev make mercurial binutils bison gcc \
-                       build-essential
+RUN apt-get install -y \
+  binutils \
+  bison \
+  build-essential\
+  curl \
+  gcc \
+  git \
+  libpq-dev \
+  make \
+  mercurial \
+  mongodb-org-server \
+  openssh-server \
+  postgresql-9.3 \
+  postgresql-common \
+  sudo \
+  tmux \
+  vim-nox \
+  zsh \
+;
 
 ######################
 ## Create sudo user ##
@@ -53,44 +69,16 @@ EXPOSE 22
 USER $USERNAME
 WORKDIR /home/$USERNAME
 
-######################
-## Personal config  ##
-######################
+#########################
+## Add ssh known hosts ##
+#########################
 
-## Create projects directory
-RUN mkdir projects
-
-## Install Oh My Zsh
-RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
-RUN sudo chsh -s $(which zsh) $USERNAME
-## Custom zsh config
-RUN rm ~/.zshrc
-RUN curl -o ~/.zshrc https://gist.githubusercontent.com/groteck/24151cc9f33a6fa33d36/raw/210ba5975bbf75af7f28d266fc73ba0c3eb4ea18/.zshrc
-
-## Add ssh config for github
-RUN mkdir ~/.ssh
-RUN ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-## Install my personal vim config
-### Important parameters
-ENV VIMRC_FILE https://raw.githubusercontent.com/groteck/vim/vim-plug/vimrc
-ENV VIM_PLUGINS_FILE https://raw.githubusercontent.com/groteck/vim/vim-plug/bundles.vim
-
-### Create vim folders
-RUN mkdir .vim .vim/bundle .vim/backup .vim/swap .vim/cache .vim/undo
-### add vimrc
-RUN curl -o ~/.vimrc $VIMRC_FILE
-### Install plugins
-RUN curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-RUN curl -o ~/.vim/bundles.vim  $VIM_PLUGINS_FILE
-RUN vim -N -u ~/.vim/bundles.vim +PlugInstall +qall
-
-# Tmux configuration
-RUN curl -o ~/.tmux.conf https://gist.githubusercontent.com/groteck/3341700/raw/559cd4746dc9de6a5d7c2d1efe59b01a9d78b5d4/.tmux.conf
-RUN curl -o ~/.tmux.powerline https://gist.githubusercontent.com/groteck/3341700/raw/b8a07517ef7a15f68277af8ee65bea8d76e47a8d/.tmux.powerline
-RUN mkdir -p ~/.solarized/tmux-colors-solarized
-Run curl ~/.solarized/tmux-colors-solarized/tmuxcolors-256.conf https://gist.githubusercontent.com/groteck/3341700/raw/eb7ede440843455f06c2df0ec317a01f52350886/tmuxcolors-256.conf
+# Create the needed directory and assign permissions
+RUN mkdir /home/$USERNAME/.ssh
+RUN chmod 700 /home/$USERNAME/.ssh
+# Add github and bitbucket hosts
+RUN ssh-keyscan -H github.com >> /home/$USERNAME/.ssh/known_hosts
+RUN ssh-keyscan -H bitbucket.com >> /home/$USERNAME/.ssh/known_hosts
 
 #############
 ## Locales ##
@@ -133,20 +121,57 @@ RUN /bin/bash -l -c "zsh < <(curl -s -S -L https://raw.githubusercontent.com/moo
 RUN zsh -c "source ~/.gvm/scripts/gvm; gvm install go1.4.2"
 RUN zsh -c "source ~/.gvm/scripts/gvm; gvm use go1.4.2 --default"
 
+######################
+## Personal config  ##
+######################
+
+## Create projects directory
+RUN mkdir projects
+
+## Install Oh My Zsh
+RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+RUN sudo chsh -s $(which zsh) $USERNAME
+## Custom zsh config
+RUN rm ~/.zshrc
+RUN curl -o ~/.zshrc https://gist.githubusercontent.com/groteck/24151cc9f33a6fa33d36/raw/210ba5975bbf75af7f28d266fc73ba0c3eb4ea18/.zshrc
+
+## Install my personal vim config
+### Important parameters
+ENV VIMRC_FILE https://raw.githubusercontent.com/groteck/vim/vim-plug/vimrc
+ENV VIM_PLUGINS_FILE https://raw.githubusercontent.com/groteck/vim/vim-plug/bundles.vim
+
+### Create vim folders
+RUN mkdir .vim .vim/bundle .vim/backup .vim/swap .vim/cache .vim/undo
+### add vimrc
+RUN curl -o ~/.vimrc $VIMRC_FILE
+### Install plugins
+RUN curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+RUN curl -o ~/.vim/bundles.vim  $VIM_PLUGINS_FILE
+RUN vim -N -u ~/.vim/bundles.vim +PlugInstall +qall
+
+# Tmux configuration
+RUN curl -o ~/.tmux.conf https://gist.githubusercontent.com/groteck/3341700/raw/559cd4746dc9de6a5d7c2d1efe59b01a9d78b5d4/.tmux.conf
+RUN curl -o ~/.tmux.powerline https://gist.githubusercontent.com/groteck/3341700/raw/b8a07517ef7a15f68277af8ee65bea8d76e47a8d/.tmux.powerline
+RUN mkdir -p ~/.solarized/tmux-colors-solarized
+Run curl ~/.solarized/tmux-colors-solarized/tmuxcolors-256.conf https://gist.githubusercontent.com/groteck/3341700/raw/eb7ede440843455f06c2df0ec317a01f52350886/tmuxcolors-256.conf
+
 #############
 ## MongoDB ##
 #############
 
+USER root
+
 # Config Mongo
-RUN sudo mkdir -p /data/db
-RUN sudo sed 's/^bind_ip/#bind_ip/' -i /etc/mongod.conf
-RUN sudo chown -R mongodb:mongodb /var/lib/mongodb
+RUN mkdir -p /data/db
+RUN sed 's/^bind_ip/#bind_ip/' -i /etc/mongod.conf
+RUN chown -R mongodb:mongodb /var/lib/mongodb
 
 ##############
 ## Postgres ##
 ##############
 
-# Congig PG User
+# Add PG User
 USER postgres
 
 RUN /etc/init.d/postgresql start &&\
