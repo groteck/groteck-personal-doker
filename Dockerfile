@@ -53,6 +53,8 @@ RUN echo "$USERNAME:$USERPASSWORD" | chpasswd
 RUN mkdir -p /etc/sudoers.d && \
              echo "$USERNAME ALL= NOPASSWD: ALL" > /etc/sudoers.d/$USERNAME && \
              chmod 0440 /etc/sudoers.d/$USERNAME
+# Use zsh like main shell
+RUN sudo chsh -s $(which zsh) $USERNAME
 
 ##########
 ## SSH ##
@@ -130,7 +132,6 @@ RUN mkdir projects
 
 ## Install Oh My Zsh
 RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
-RUN sudo chsh -s $(which zsh) $USERNAME
 ## Custom zsh config
 RUN rm ~/.zshrc
 RUN curl -o ~/.zshrc https://gist.githubusercontent.com/groteck/24151cc9f33a6fa33d36/raw/210ba5975bbf75af7f28d266fc73ba0c3eb4ea18/.zshrc
