@@ -127,35 +127,14 @@ RUN zsh -c "source ~/.gvm/scripts/gvm; gvm use go1.4.2 --default"
 ## Personal config  ##
 ######################
 
-## Create projects directory
-RUN mkdir projects
+ENV GITHUB_USER https://raw.githubusercontent.com/groteck
 
-## Install Oh My Zsh
-RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
-## Custom zsh config
-RUN rm ~/.zshrc
-RUN curl -o ~/.zshrc https://gist.githubusercontent.com/groteck/24151cc9f33a6fa33d36/raw/210ba5975bbf75af7f28d266fc73ba0c3eb4ea18/.zshrc
+RUN wget -O - $GITHUB_USER/tmux-conf/master/install.sh | zsh
+RUN wget -O - $GITHUB_USER/vim-config/master/install.sh | zsh
+RUN wget -O - $GITHUB_USER/zsh-config/master/install.sh | zsh
 
-## Install my personal vim config
-### Important parameters
-ENV VIMRC_FILE https://raw.githubusercontent.com/groteck/vim/vim-plug/vimrc
-ENV VIM_PLUGINS_FILE https://raw.githubusercontent.com/groteck/vim/vim-plug/bundles.vim
-
-### Create vim folders
-RUN mkdir .vim .vim/bundle .vim/backup .vim/swap .vim/cache .vim/undo
-### add vimrc
-RUN curl -o ~/.vimrc $VIMRC_FILE
-### Install plugins
-RUN curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-RUN curl -o ~/.vim/bundles.vim  $VIM_PLUGINS_FILE
-RUN vim -N -u ~/.vim/bundles.vim +PlugInstall +qall
-
-# Tmux configuration
-RUN curl -o ~/.tmux.conf https://gist.githubusercontent.com/groteck/3341700/raw/559cd4746dc9de6a5d7c2d1efe59b01a9d78b5d4/.tmux.conf
-RUN curl -o ~/.tmux.powerline https://gist.githubusercontent.com/groteck/3341700/raw/b8a07517ef7a15f68277af8ee65bea8d76e47a8d/.tmux.powerline
-RUN mkdir -p ~/.solarized/tmux-colors-solarized
-Run curl ~/.solarized/tmux-colors-solarized/tmuxcolors-256.conf https://gist.githubusercontent.com/groteck/3341700/raw/eb7ede440843455f06c2df0ec317a01f52350886/tmuxcolors-256.conf
+## Create project directory
+RUN mkdir project
 
 #############
 ## MongoDB ##
