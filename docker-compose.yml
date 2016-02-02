@@ -2,6 +2,7 @@ groteck:
   build: .
   volumes:
     - ../../:/home/groteck/projects
+    - /tmp/.X11-unix:/tmp/.X11-unix
   ports:
     - "3000:3000"
     - "4567:4567"
