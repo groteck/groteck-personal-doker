@@ -44,7 +44,7 @@ RUN apt-get install -y \
 
 # SSH user
 ENV USERNAME groteck
-ENV USERPASSWORD  groteck
+ENV USERPASSWORD groteck
 # Create and configure user
 RUN useradd -ms /bin/bash $USERNAME
 # User with empty password
