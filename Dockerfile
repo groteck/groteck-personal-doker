@@ -26,6 +26,8 @@ RUN apt-get install -y \
   gcc \
   git \
   libpq-dev \
+  libxml2-dev \
+  libxslt-dev \
   make \
   mercurial \
   mongodb-org-server \
@@ -133,9 +135,6 @@ RUN wget -O - $GITHUB_USER/tmux-conf/master/install.sh | zsh
 RUN wget -O - $GITHUB_USER/vim-config/master/install.sh | zsh
 RUN wget -O - $GITHUB_USER/zsh-config/master/install.sh | zsh
 
-## Create project directory
-RUN mkdir project
-
 #############
 ## MongoDB ##
 #############
@@ -165,6 +164,6 @@ USER root
 
 # Ubuntu docker machine has not /etc/init.d, so I build my own init services file
 RUN echo "sudo su postgres -c '/usr/lib/postgresql/9.3/bin/postgres -D /var/lib/postgresql/9.3/main -c config_file=/etc/postgresql/9.3/main/postgresql.conf &'" >> /boot_script.sh
-Run echo "exec sudo -u mongodb -H /usr/bin/mongod --config /etc/mongod.conf --httpinterface --rest &"
+Run echo "exec sudo -u mongodb -H /usr/bin/mongod --config /etc/mongod.conf --httpinterface --rest &" >> /boot_script.sh
 RUN echo "/usr/sbin/sshd -D -e" >> /boot_script.sh
 CMD sh /boot_script.sh
